@@ -33,22 +33,21 @@ P=gS-gN
 A=545.8*10**6
 h=6.636*10**(-34)
 
-s=10**-18
 
 def E44(B):
-    x,A1=u*B/h*s,A*s
+    x,A1=u*B,A*h
     E1,E2=A1*3.5-x*(7*gN+gS)/2,3.5*A1+x*(7*gN+gS)/2
     return [E1,E2]
 
 def H(B):
-    x,A1=u*B/h*s,A*s
-    a1,b1,c1,d1=(3.5*A1-x*(3*gN+P*3/8)),x*np.sqrt(7)/8*P,x*np.sqrt(7)/8*P,(-4.5*A-x*(3*gN-P*3/8))
-    a2,b2,c2,d2=(3.5*A1-x*(2*gN+P*1/4)),x*np.sqrt(3)/4*P,x*np.sqrt(3)/4*P,(-4.5*A-x*(2*gN-P*1/4))
-    a3,b3,c3,d3=(3.5*A1-x*(gN+P*1/8)),x*np.sqrt(15)/8*P,x*np.sqrt(15)/8*P,(-4.5*A-x*(gN-P*1/8))
+    x,A1=u*B,A*h
+    a1,b1,c1,d1=(3.5*A1-x*(3*gN+P*3/8)),x*np.sqrt(7)/8*P,x*np.sqrt(7)/8*P,(-4.5*A1-x*(3*gN-P*3/8))
+    a2,b2,c2,d2=(3.5*A1-x*(2*gN+P*1/4)),x*np.sqrt(3)/4*P,x*np.sqrt(3)/4*P,(-4.5*A1-x*(2*gN-P*1/4))
+    a3,b3,c3,d3=(3.5*A1-x*(gN+P*1/8)),x*np.sqrt(15)/8*P,x*np.sqrt(15)/8*P,(-4.5*A1-x*(gN-P*1/8))
     a4,b4,c4,d4=(3.5*A1),x*P,x*P,(-4.5*A)
-    a5,b5,c5,d5=(3.5*A1+x*(gN+P*3/8)),x*np.sqrt(7)/8*P,x*np.sqrt(7)/8*P,(-4.5*A+x*(3*gN-P*3/8))
-    a6,b6,c6,d6=(3.5*A1+x*(gN+P*1/4)),x*np.sqrt(3)/4*P,x*np.sqrt(3)/4*P,(-4.5*A+x*(gN-P*1/4))
-    a7,b7,c7,d7=(3.5*A1+x*(gN+P*1/8)),x*np.sqrt(15)/8*P,x*np.sqrt(15)/8*P,(-4.5*A+x*(gN-P*1/8))
+    a5,b5,c5,d5=(3.5*A1+x*(gN+P*3/8)),x*np.sqrt(7)/8*P,x*np.sqrt(7)/8*P,(-4.5*A1+x*(3*gN-P*3/8))
+    a6,b6,c6,d6=(3.5*A1+x*(gN+P*1/4)),x*np.sqrt(3)/4*P,x*np.sqrt(3)/4*P,(-4.5*A1+x*(gN-P*1/4))
+    a7,b7,c7,d7=(3.5*A1+x*(gN+P*1/8)),x*np.sqrt(15)/8*P,x*np.sqrt(15)/8*P,(-4.5*A1+x*(gN-P*1/8))
     H=[[a1,b1,c1,d1],[a2,b2,c2,d2],[a3,b3,c3,d3],[a4,b4,c4,d4],[a5,b5,c5,d5],[a6,b6,c6,d6],[a7,b7,c7,d7]]
     return H
 
@@ -65,54 +64,53 @@ def Freq(B):
     M.append(E44(B)[0])
     M.append(E44(B)[1])
 
-    for n in range(len(M)):
+    for n in range(0,12):
         L=[]
-        for j in range(n+1, len(M)):
+        for j in range(n+2, n+4):
             L.append(abs(M[j]-M[n])) #h has been taken care of here.
         W.append(L)
+    W.append([abs(M[0]-M[14]),abs(M[1]-M[14])])
+    W.append([abs(M[12]-M[15]),abs(M[13]-M[15])])
     return W
 
+# print(Freq(0)[1][12],Freq(1)[1][12]-Freq(0)[1][12])
 
-B=np.linspace(0,10,1000)
+B=np.linspace(0,0.01,100)
 K=[]
-for n in range(0,16):
-    for j in range(0, 16-n-1):
-       A0=[]
+KB=[]
+for n in range(0,14):
+    for j in range(0, 2):
     #    print((n,j))
        v=Freq(0)[n][j]
-       w=Freq(10)[n][j]-v
+       w=Freq(1)[n][j]-v
        if v>100:
-           A0.append(v)
-           A0.append(abs(w))
-           A0.append([n,j])
-        #    plt.plot(B,Freq(B)[n][j],'b')
+           K.append([[v,abs(w)/v],[n,j]])
+           plt.plot(B,Freq(B)[n][j],'b')
+           KB.append([Freq(0.01)[n][j],[n,j]])
        else:
            continue
-       K.append(A0)
     #    plt.show()
 
-# plt.show()
-K0=[]
-for l in range(len(K)):
-    K0.append(K[l][1])
+print(K)
+plt.show()
+# K0=[]
+# for l in range(len(K)):
+#     K0.append(K[l][0][1])
 
-K1=np.sort_complex(K0)
+# K1=np.sort(K0)
 # print(K1)
-# print(K[K0.index(K1[1])])
+# print(K0.index(K1[0]))
 
-List=[]
-for n in range(0,16):
-    for j in range(0,16-n-1):
-        if Freq(0.01)[n][j]>10**8:
-           List.append(Freq(0.01)[n][j])
-        else:
-            continue
+# List=[]
+# for n in range(0,14):
+#     for j in range(0,2):
+#         if Freq(0.01)[n][j]>10**8:
+#            List.append(Freq(0.01)[n][j])
+#         else:
+#             continue
 
-L1=np.sort(List)
-print(L1)
-
-
-
+# L1=np.sort(List)
+# print(L1)
 
 
 
